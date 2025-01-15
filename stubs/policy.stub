@@ -1,0 +1,86 @@
+<?php
+
+namespace {{ namespace }};
+
+use {{ model }};
+use Illuminate\Auth\Access\HandlesAuthorization;
+
+class {{ class }}
+{
+    use HandlesAuthorization;
+
+    /**
+     * Determine if the given user can view Restify resources.
+     *
+     * @param  \App\Models\User|null  $user
+     * @return bool
+     */
+    public function allowRestify($user = null): bool
+    {
+        // Add your logic here
+        return true;
+    }
+
+    /**
+     * Determine if the user can view the model.
+     *
+     * @param  \App\Models\User|null  $user
+     * @param  {{ model }}  $model
+     * @return bool
+     */
+    public function show($user, {{ model }} $model): bool
+    {
+        // Add your logic here
+        return true;
+    }
+
+    /**
+     * Determine if the user can create a model.
+     *
+     * @param  \App\Models\User|null  $user
+     * @return bool
+     */
+    public function store($user): bool
+    {
+        // Add your logic here
+        return true;
+    }
+
+    /**
+     * Determine if the user can perform bulk creation.
+     *
+     * @param  \App\Models\User|null  $user
+     * @return bool
+     */
+    public function storeBulk($user): bool
+    {
+        // Add your logic here
+        return true;
+    }
+
+    /**
+     * Determine if the user can update the model.
+     *
+     * @param  \App\Models\User|null  $user
+     * @param  {{ model }}  $model
+     * @return bool
+     */
+    public function update($user, {{ model }} $model): bool
+    {
+        // Add your logic here
+        return true;
+    }
+
+    /**
+     * Determine if the user can delete the model.
+     *
+     * @param  \App\Models\User|null  $user
+     * @param  {{ model }}  $model
+     * @return bool
+     */
+    public function delete($user, {{ model }} $model): bool
+    {
+        // Add your logic here
+        return true;
+    }
+}
