@@ -20,10 +20,13 @@ class ResponseBuilder
 
     protected $errors = [];
 
-    public function __construct($data = null, int $status = 200)
+    public function __construct($data = null,$message ,int $status = 200)
     {
+        
         $this->data = $data;
+        $this->message = $message;
         $this->status = $status;
+       
     }
 
     public function data($data): self

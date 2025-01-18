@@ -11,10 +11,11 @@ use Mhasnainjafri\RestApiKit\Http\Responses\ResponseBuilder;
 
 class RestController extends Controller
 {
-    protected function response($data = null, int $status = 200): ResponseBuilder
+    protected function response($data = null,string|array $message ,int $status = 200):JsonResponse
     {
-        return new ResponseBuilder($data, $status);
-    }
+        $responseBuilder = new ResponseBuilder($data,$message, $status);
+        return $responseBuilder->toResponse();  
+  }
 
     protected function errors(array $errors, int $status = 400): JsonResponse
     {
