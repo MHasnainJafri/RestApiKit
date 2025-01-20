@@ -11,11 +11,28 @@ use Mhasnainjafri\RestApiKit\Http\Responses\ResponseBuilder;
 
 class RestController extends Controller
 {
-    protected function response($data = null,string|array $message ,int $status = 200):JsonResponse
+    protected function response($data = null, string|array $message = null, int $status = 200): JsonResponse
     {
-        $responseBuilder = new ResponseBuilder($data,$message, $status);
-        return $responseBuilder->toResponse();  
-  }
+        $responseBuilder = new ResponseBuilder($message, $status);
+        $responseBuilder->data($data);
+        return $responseBuilder->toResponse();
+    }
+    protected function exception($exception,$message,$status): JsonResponse
+    {
+        $responseBuilder = new ResponseBuilder(status: $status);
+
+        // Build a more detailed response with meaningful information
+        return $responseBuilder
+            ->message($message??'Something went Wrong')
+            ->line('Error occurred on line ' . $exception->getLine()) // Specific line of code where the error occurred
+            ->file('In file: ' . $exception->getFile()) // The file in which the error occurred
+            ->stack('Error stack trace: ' . $exception->getTraceAsString()) // Full stack trace for debugging
+            ->addError('Specific error: ' . $exception->getMessage()) // More detailed error message, using the exception message
+            ->addError('Request ID: ' . uniqid()) // Unique request ID to trace the issue
+            ->toResponse(); // Finalize and return the response
+        
+        
+    }
 
     protected function errors(array $errors, int $status = 400): JsonResponse
     {

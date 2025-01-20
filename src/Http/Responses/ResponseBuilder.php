@@ -20,19 +20,23 @@ class ResponseBuilder
 
     protected $errors = [];
 
-    public function __construct($data = null,$message ,int $status = 200)
+    public function __construct($message=null ,int $status = 200)
     {
         
-        $this->data = $data;
+      
         $this->message = $message;
         $this->status = $status;
-       
+      
     }
 
     public function data($data): self
     {
-        $this->data = $data;
-
+        if($data instanceof \Illuminate\Pagination\LengthAwarePaginator){
+        $this->paginate($data);
+        }else{
+            $this->data = $data;
+        }
+       
         return $this;
     }
 
@@ -94,6 +98,7 @@ class ResponseBuilder
 
     public function toResponse(): JsonResponse
     {
+        
         $response = [
             'success' => empty($this->errors),
             'data' => $this->data,
@@ -117,6 +122,9 @@ class ResponseBuilder
 
     public function paginate($paginator, string $resourceKey = 'data')
     {
-        $this->data = CustomPaginator::paginate($paginator, $this->message);
+        
+        $paginator= CustomPaginator::paginate($paginator, $this->message);
+        $this->data['items'] =$paginator['data'];
+        $this->data['meta'] =$paginator['meta'];
     }
 }

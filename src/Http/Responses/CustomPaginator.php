@@ -8,6 +8,7 @@ class CustomPaginator
 {
     public static function paginate(LengthAwarePaginator $paginator, ?string $message = null)
     {
+        
         return [
             'success' => true,
             'message' => $message,
