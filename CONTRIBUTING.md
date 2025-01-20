@@ -36,6 +36,39 @@ Before submitting a pull request:
 - Check the codebase to ensure that your feature doesn't already exist.
 - Check the pull requests to ensure that another person hasn't already submitted the feature or fix.
 
+## TODO List
+
+We are actively working on the following features and welcome contributions to help implement them:
+
+### Query Builder Enhancements
+Extend query building capabilities for flexible API development:
+```php
+QueryBuilder::for(User::class)
+    ->allowedFilters(['name', 'email'])
+    ->allowedSorts(['name', 'created_at'])
+    ->allowedIncludes('posts')
+    ->withTrashed()
+    ->where('score', '>', 42)
+    ->allowedFields(['id', 'name'])
+    ->paginate();
+```
+
+### API Response Helpers
+Provide standalone response helpers for developers who prefer not to extend `RestController`:
+```php
+API::success($data, 'Data retrieved successfully');
+API::error('An error occurred', API::INTERNAL_SERVER_ERROR);
+
+// Additional response helpers:
+API::validationError($errors);
+API::notFound('User not found');
+API::cachedResponse($resource, $cacheKey);
+API::paginatedCachedResponse($resource, $pageNumber);
+API::clearCacheKey($cacheKey);
+```
+
+If you'd like to work on any of these features, please comment on the corresponding GitHub issue or submit a pull request.
+
 ## Requirements
 
 If the project maintainer has any additional requirements, you will find them listed here.
@@ -51,5 +84,3 @@ If the project maintainer has any additional requirements, you will find them li
 - **One pull request per feature** - If you want to do more than one thing, send multiple pull requests.
 
 - **Send coherent history** - Make sure each individual commit in your pull request is meaningful. If you had to make multiple intermediate commits while developing, please [squash them](https://www.git-scm.com/book/en/v2/Git-Tools-Rewriting-History#Changing-Multiple-Commit-Messages) before submitting.
-
-**Happy coding**!

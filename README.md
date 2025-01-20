@@ -194,29 +194,24 @@ $routes = [
 
 The package includes a predefined `API` class with constants for common HTTP status codes:
 
-```php
-class API
-{
-    // Success Codes
-    const SUCCESS = 200;
-    const CREATED = 201;
-    const NO_CONTENT = 204;
+## Constants
 
-    // Client Error Codes
-    const BAD_REQUEST = 400;
-    const UNAUTHORIZED = 401;
-    const FORBIDDEN = 403;
-    const NOT_FOUND = 404;
-    const METHOD_NOT_ALLOWED = 405;
-    const UNPROCESSABLE_ENTITY = 422;
+APITOOLKIT provides various HTTP status codes as constants for convenience:
 
-    // Server Error Codes
-    const INTERNAL_SERVER_ERROR = 500;
-    const NOT_IMPLEMENTED = 501;
-    const BAD_GATEWAY = 502;
-    const SERVICE_UNAVAILABLE = 503;
-}
-```
+- `API::SUCCESS`: 200
+- `API::CREATED`: 201
+- `API::NO_CONTENT`: 204
+- `API::BAD_REQUEST`: 400
+- `API::UNAUTHORIZED`: 401
+- `API::FORBIDDEN`: 403
+- `API::NOT_FOUND`: 404
+- `API::METHOD_NOT_ALLOWED`: 405
+- `API::UNPROCESSABLE_ENTITY`: 422
+- `API::INTERNAL_SERVER_ERROR`: 500
+- `API::NOT_IMPLEMENTED`: 501
+- `API::BAD_GATEWAY`: 502
+- `API::SERVICE_UNAVAILABLE`: 503
+
 
 ---
 
@@ -232,6 +227,41 @@ app(ActionMacroManager::class)->macro('greetUser', function ($name) {
 ```
 
 ---
+## TODO List
+
+### Planned Features
+
+1. **Query Builder Enhancements**  
+   Extend query building capabilities to make API development more streamlined:
+   ```php
+   QueryBuilder::for(User::class)
+       ->allowedFilters(['name', 'email'])
+       ->allowedSorts(['name', 'created_at'])
+       ->allowedIncludes('posts')
+       ->withTrashed()
+       ->where('score', '>', 42)
+       ->allowedFields(['id', 'name'])
+       ->paginate();
+   ```
+
+2. **Response Handling Without Controller Extension**  
+   Add a standalone API response helper for developers who prefer not to extend `RestController`:
+   ```php
+   API::success($data, 'Data retrieved successfully');
+   API::error('An error occurred', API::INTERNAL_SERVER_ERROR);
+
+   // Additional response helpers:
+   API::validationError($errors);
+   API::notFound('User not found');
+   API::cachedResponse($resource, $cacheKey);
+   API::paginatedCachedResponse($resource, $pageNumber);
+   API::clearCacheKey($cacheKey);
+   ```
+
+These features aim to simplify API development and improve flexibility for developers using this package.
+```
+
+
 
 ## Testing
 
