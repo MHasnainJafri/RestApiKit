@@ -6,9 +6,8 @@ use Illuminate\Pagination\LengthAwarePaginator;
 
 class CustomPaginator
 {
-    public static function paginate(LengthAwarePaginator $paginator, ?string $message = null)
+    public static function paginate(LengthAwarePaginator $paginator, ?string $message = null): array
     {
-        
         return [
             'success' => true,
             'message' => $message,

@@ -1,6 +1,5 @@
 <?php
-
-namespace Mhasnainjafri\RestApiKit\Http\Controllers;
+namespace Mhasnainjafri\RestApiKit\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
@@ -10,68 +9,143 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
-use Mhasnainjafri\RestApiKit\Notifications\SendOtpNotification; // Ensure correct User model namespace
+use Mhasnainjafri\RestApiKit\Helpers\OtpManager;
+use Mhasnainjafri\RestApiKit\Notifications\SendOtpNotification;
 
-class AuthController extends Controller
+class AuthController extends Controller 
 {
-    private $otpTtl = 10; // OTP TTL in minutes
-
-    private $maxOtpTries = 10;
+    private $otpTtl;
+    private $maxOtpTries;
 
     /**
-     * Register a new user.
+     * AuthController constructor.
      *
-     * @return \Illuminate\Http\JsonResponse
+     * Initialize the controller, injecting the OtpManager instance and
+     * setting the middleware to prevent authenticated users from accessing
+     * the login and register routes.
+     */
+    public function __construct(private OtpManager $otpManager)
+    {
+        // Fetch OTP TTL and max tries from config
+        $this->otpTtl = config('restify.auth.otp.ttl');
+        $this->maxOtpTries = config('restify.auth.otp.max_tries');
+    }
+
+    /**
+     * Handle a registration request for the application.
      */
     public function register(Request $request)
     {
-        $request->validate([
+        // Define validation rules dynamically based on the required fields for different scenarios
+        $validationRules = [
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8',
-        ]);
-
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => bcrypt($request->password),
-        ]);
-
+        ];
+    
+        // Dynamically add additional validation rules if provided in the config or elsewhere
+        if (config('restify.auth.custom_registration_fields') && is_array(config('restify.auth.custom_registration_fields'))) {
+            foreach (config('restify.auth.custom_registration_fields') as $field => $rules) {
+                $validationRules[$field] = $rules;
+            }
+        }
+    
+        // Validate incoming request
+        $validatedData = $request->validate($validationRules);
+    
+        // Create user with validated data
+       
+    
+        $user = User::create($validatedData);
+    
+        // Determine the correct token provider based on config
         if (config('restify.auth.provider') == 'sanctum') {
             $token = $user->createToken('API Token')->plainTextToken;
         } else {
             $token = $user->createToken('API Token')->accessToken;
         }
-
-return response()->json([
+    
+        return response()->json([
             'message' => 'User Registered Successfully',
             'token' => $token,
             'user' => $user,
         ]);
     }
+    
 
+    /**
+     * Handle a login request for the application.
+     */
     public function login(Request $request)
     {
-        $credentials = $request->validate([
-            'email' => 'required|email',
-            'password' => 'required',
-        ]);
-
-        if (Auth::attempt($credentials)) {
+        // Define dynamic validation rules based on the input type
+        $validationRules = [
+            'password' => 'required|string', // Password is always required
+            'remember' => ['sometimes', 'boolean'], // Remember me is optional
+        ];
+    
+        // Check if phone number or email is provided for login
+        if (config('restify.auth.login_with') == 'email') {
+            $validationRules['email'] = 'required|email';
+        }else{
+            $validationRules[config('restify.auth.login_with')] = 'required';
+        }
+    
+      
+    
+        // Validate the incoming data
+        $credentials = $request->validate($validationRules);
+    
+        // Attempt login based on provided credentials
+        if ($request->has('email')) {
+            $credentials = [
+                'email' => $request->email,
+                'password' => $request->password,
+            ];
+        } elseif ($request->has('phone_number')) {
+            // Attempt login using phone number and password if provided
+            $credentials = [
+                'phone_number' => $request->phone_number,
+                'password' => $request->password,
+            ];
+        }
+    
+        // Check the login credentials
+        if (Auth::attempt($credentials, $request->remember)) {
             $user = Auth::user();
             $token = null;
+    
+            // Generate token based on config provider
             if (config('restify.auth.provider') == 'sanctum') {
                 $token = $user->createToken('API Token')->plainTextToken;
             } else {
                 $token = $user->createToken('API Token')->accessToken;
             }
-
+    
             return response()->json(['token' => $token, 'user' => $user]);
         }
-
+    
         return response()->json(['message' => 'Invalid credentials'], 401);
     }
+    
 
+    /**
+     * Revoke the authenticated user's token and log them out.
+     */
+    public function logout()
+    {
+        if (config('restify.auth.provider') == 'sanctum') {
+            auth()->user()->tokens()->delete();
+        } else {
+            auth()->logout();
+        }
+
+        return response()->json(['message' => 'Logged out successfully']);
+    }
+
+    /**
+     * Handle a forgot password request.
+     */
     public function forgotPassword(Request $request)
     {
         $request->validate(['email' => 'required|email']);
@@ -81,6 +155,9 @@ return response()->json([
         return response()->json(['message' => 'Password reset link sent.']);
     }
 
+    /**
+     * Handle a password reset request.
+     */
     public function resetPassword(Request $request)
     {
         $request->validate([
@@ -102,6 +179,9 @@ return response()->json([
             : response()->json(['message' => 'Password reset failed.'], 400);
     }
 
+    /**
+     * Handle an email verification request.
+     */
     public function verifyEmail($id, $emailHash)
     {
         $user = User::find($id);
@@ -115,81 +195,65 @@ return response()->json([
         return response()->json(['message' => 'Email verified successfully.']);
     }
 
-    // Cache helpers for OTP retries and OTP itself
-    private function getOtpTries($email)
-    {
-        return Cache::get('Otp__tries_'.$email, 0);
-    }
-
-    private function incrementOtpTries($email)
-    {
-        $tries = $this->getOtpTries($email);
-        Cache::put('Otp__tries_'.$email, $tries + 1, now()->addMinutes($this->otpTtl));
-
-        return $tries + 1;
-    }
-
-    private function getOtp($email)
-    {
-        return Cache::get('otp_'.$email);
-    }
-
-    private function storeOtp($email, $otp)
-    {
-        Cache::put('otp_'.$email, $otp, now()->addMinutes($this->otpTtl));
-    }
-
-    private function clearOtp($email)
-    {
-        Cache::forget('otp_'.$email);
-        Cache::forget('Otp__tries_'.$email);
-    }
-
+    /**
+     * Send OTP to the user.
+     */
     public function sendOtp(Request $request)
     {
         $request->validate(['email' => 'required|email']);
 
         $email = $request->email;
+        $tries = $this->otpManager->getOtpTries($email);
 
-        $tries = $this->getOtpTries($email);
         if ($tries >= $this->maxOtpTries) {
             return response()->json(['message' => 'Too many OTP tries. Please try again later.'], 400);
         }
 
-        // Generate OTP securely
-        $otp = Str::random(6);  // You can replace this with any more secure OTP generation logic
+        $otp = $this->otpManager->generateOtp();
+
 
         // Store OTP in cache
-        $this->storeOtp($email, $otp);
+        $this->otpManager->storeOtp($email, $otp);
 
         try {
             $user = User::where('email', $email)->first();
             if ($user) {
-                $user->notify(new SendOtpNotification($otp));  // Sending the OTP notification
+                $user->notify(new SendOtpNotification($otp));
             }
 
-            return response()->json(['message' => 'OTP sent successfully']);
+            $response = [
+                'message' => 'OTP sent successfully',
+            ];
+
+            // Include OTP in response if APP_DEBUG is true
+            if (config('restify.APP_DEBUG') == true) {
+                $response['otp'] = $otp;
+            }
+
+            return response()->json($response);
         } catch (\Exception $e) {
             Log::error('Failed to send OTP: '.$e->getMessage());
-
             return response()->json(['message' => 'Failed to send OTP. Please try again later.'], 500);
         }
     }
 
+    /**
+     * Verify the OTP entered by the user.
+     */
     public function verifyOtp(Request $request)
     {
         $request->validate([
             'email' => 'required|email',
-            'otp' => 'required|integer',
+            'otp' => 'required',
         ]);
 
-        $tries = $this->incrementOtpTries($request->email);
+        $tries = $this->otpManager->incrementOtpTries($request->email);
 
         if ($tries > $this->maxOtpTries) {
             return response()->json(['message' => 'Too many OTP tries. Please try again later.'], 400);
         }
 
-        $cachedOtp = $this->getOtp($request->email);
+        $cachedOtp = $this->otpManager->getOtp($request->email);
 
         if (! $cachedOtp || $cachedOtp != $request->otp) {
             return response()->json(['message' => 'Invalid OTP'], 400);
@@ -198,6 +262,9 @@ return response()->json([
         return response()->json(['status' => 'success', 'message' => 'OTP verified successfully']);
     }
 
+    /**
+     * Change the user's password.
+     */
     public function changePassword(Request $request)
     {
         $request->validate([
@@ -208,19 +275,19 @@ return response()->json([
         ]);
 
         // Increment OTP tries
-        $tries = $this->incrementOtpTries($request->email);
+        $tries = $this->otpManager->incrementOtpTries($request->email);
 
         if ($tries > $this->maxOtpTries) {
             return response()->json(['message' => 'Too many OTP tries. Please try again later.'], 400);
         }
 
-        $cachedOtp = $this->getOtp($request->email);
+        $cachedOtp = $this->otpManager->getOtp($request->email);
 
         if (! $cachedOtp || $cachedOtp != $request->otp) {
             return response()->json(['message' => 'Invalid OTP'], 400);
         }
 
-        $this->clearOtp($request->email);
+        $this->otpManager->clearOtp($request->email);
 
         $user = User::where('email', $request->email)->first();
 

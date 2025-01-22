@@ -1,11 +1,10 @@
 {
     "name": "mhasnainjafri/restapikit",
     "description": "Unlock the full potential of your REST API development with RestApiKit. This powerful toolkit offers a variety of utilities to simplify the process of creating, testing, and managing REST APIs. From automatic documentation generation to built-in validation, RestApiKit provides a seamless workflow for developers looking to build reliable and scalable APIs with ease. Focus more on the logic, and let RestApiKit handle the heavy lifting.",
-    "version": "v1.0.3",
     "keywords": [
         "mhasnainjafri",
         "restapikit",
-        "apitoolkit", 
+        "apitoolkit",
         "spatie",
         "laravel-json-api-paginate",
         "laravel-query-builder"

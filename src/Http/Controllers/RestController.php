@@ -6,50 +6,64 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Cache;
+use Mhasnainjafri\RestApiKit\API;
 use Mhasnainjafri\RestApiKit\Helpers\FileUploader;
-use Mhasnainjafri\RestApiKit\Http\Responses\ResponseBuilder;
 
 class RestController extends Controller
 {
-    protected function response($data = null, string|array $message = null, int $status = 200): JsonResponse
+    /**
+     * Generates a JSON response with the given data, message, and status code.
+     *
+     * @param  mixed  $data  The data to be included in the response.
+     * @param  string|array|null  $message  The message to be included in the response.
+     * @param  int  $status  The HTTP status code for the response.
+     */
+    protected function response($data = null, string|array|null $message = null, int $status = 200): JsonResponse
     {
-        $responseBuilder = new ResponseBuilder($message, $status);
-        $responseBuilder->data($data);
-        return $responseBuilder->toResponse();
-    }
-    protected function exception($exception,$message,$status): JsonResponse
-    {
-        $responseBuilder = new ResponseBuilder(status: $status);
-
-        // Build a more detailed response with meaningful information
-        return $responseBuilder
-            ->message($message??'Something went Wrong')
-            ->line('Error occurred on line ' . $exception->getLine()) // Specific line of code where the error occurred
-            ->file('In file: ' . $exception->getFile()) // The file in which the error occurred
-            ->stack('Error stack trace: ' . $exception->getTraceAsString()) // Full stack trace for debugging
-            ->addError('Specific error: ' . $exception->getMessage()) // More detailed error message, using the exception message
-            ->addError('Request ID: ' . uniqid()) // Unique request ID to trace the issue
-            ->toResponse(); // Finalize and return the response
-        
-        
+        return API::response($data, $message, $status);
     }
 
+    /**
+     * Handles and generates a detailed JSON response for an exception.
+     *
+     * @param  \Exception  $exception  The exception to be processed.
+     * @param  string  $message  The custom message for the exception response.
+     * @param  int  $status  The HTTP status code for the response.
+     */
+
+    /**
+     * Handles and generates a detailed JSON response for an exception.
+     *
+     * @param  \Exception  $exception  The exception to be processed.
+     * @param  string  $message  The custom message for the exception response.
+     * @param  int  $status  The HTTP status code for the response.
+     */
+    protected function exception($exception, $message, $status): JsonResponse
+    {
+        return API::exception($exception, $message, $status);
+    }
+
+    /**
+     * Generates a JSON response with the given validation errors and status code.
+     *
+     * @param  array  $errors  The validation errors.
+     * @param  int  $status  The HTTP status code for the response.
+     */
     protected function errors(array $errors, int $status = 400): JsonResponse
     {
-        return response()->json([
-            'success' => false,
-            'errors' => $errors,
-        ], $status);
+        return API::errors($errors, $status);
     }
 
+    /**
+     * Caches the response of a given callback for a specified period.
+     *
+     * @param  string  $key  The cache key to identify the response.
+     * @param  callable  $callback  The callback function to generate the response data.
+     * @param  int|null  $minutes  The number of minutes to cache the response. Defaults to the configuration value if not provided.
+     */
     protected function cacheResponse(string $key, callable $callback, ?int $minutes = null): JsonResponse
     {
-        $minutes = $minutes ?? config('restify.cache.default_ttl', 60);
-
-        // Cache the data if it doesn't exist
-        $data = Cache::remember($key, $minutes, $callback);
-
-        return response()->json($data);
+        return API::cacheResponse($key, $callback, $minutes);
     }
 
     /**
@@ -65,7 +79,11 @@ class RestController extends Controller
     }
 
     /**
-     * Delete a file.
+     * Deletes a file using FileUploader.
+     *
+     * @param  string  $filePath  The file path to delete.
+     * @param  string|null  $disk  The disk to use when deleting the file. Defaults to the default disk if not provided.
+     * @return bool Whether the file was successfully deleted.
      */
     public function deleteFile(string $filePath, ?string $disk = null): bool
     {
@@ -74,9 +92,34 @@ class RestController extends Controller
 
     /**
      * Get the URL for a stored file.
+     *
+     * @param  string  $filePath  The file path to generate a URL for.
+     * @param  string|null  $disk  The disk to use when generating the URL. Defaults to the default disk if not provided.
+     * @return string The URL for the stored file.
      */
     public function fileUrl(string $filePath, ?string $disk = null): string
     {
         return FileUploader::url($filePath, $disk);
+    }
+
+    /**
+     * Clear a cache key.
+     *
+     * @param  string  $cacheKey  The cache key to clear.
+     * @return bool Whether the cache key was successfully cleared.
+     */
+    private function clearCacheKey(string $cacheKey): bool
+    {
+        return Cache::forget($cacheKey);
+    }
+
+    /**
+     * Return a validation error response
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function validationError(array $errors)
+    {
+        return API::validationError($errors);
     }
 }

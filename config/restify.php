@@ -6,49 +6,115 @@
 
 return [
     'auth' => [
-        /*
-        |--------------------------------------------------------------------------
-        | Table containing authenticatable resource
-        |--------------------------------------------------------------------------
-        |
-        | This configuration contain the name of the table used for the authentication.
-        |
-        */
+    /*
+    |--------------------------------------------------------------------------
+    | Table containing authenticatable resource
+    |--------------------------------------------------------------------------
+    |
+    | This configuration defines the model used for authentication purposes.
+    | You can modify the 'model' setting if you want to use a different
+    | authentication model.
+    |
+    */
+    'model' => 'App\Models\User',
 
-        'table' => 'users',
+    /*
+    |--------------------------------------------------------------------------
+    | Controller Namespace
+    |--------------------------------------------------------------------------
+    |
+    | This setting defines the namespace of the controller responsible for
+    | handling authentication routes. Make sure the specified controller
+    | is in the correct namespace and directory.
+    |
+    */
+    'controller_namespace' => 'Mhasnainjafri\RestApiKit\Http\Controllers\Auth',
 
-        /*
-        |--------------------------------------------------------------------------
-        |
-        |--------------------------------------------------------------------------
-        |
-        | Next you may configure the package you're using for the personal tokens generation,
-        | this will be used for the verification of the authenticatable model and provide the
-        | authorizable functionality
-        |
-        | Supported: "sanctum"
-        */
-
-        'provider' => 'sanctum',
-
-        /*
-        |--------------------------------------------------------------------------
-        | Auth frontend app url
-        |--------------------------------------------------------------------------
-        |
-        |URL used for reset password URL generating.
-        |
-        |
-        */
-
-        'frontend_app_url' => env('FRONTEND_APP_URL', env('APP_URL')),
-
-        'password_reset_url' => env('FRONTEND_APP_URL').'/password/reset?token={token}&email={email}',
-
-        'user_verify_url' => env('FRONTEND_APP_URL').'/verify/{id}/{emailHash}',
-
-        'user_model' => "\App\Models\User",
+    /*
+    |--------------------------------------------------------------------------
+    | OTP Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Configure the OTP (One-Time Password) behavior, including length, max
+    | tries, TTL (time to live), and type (e.g., integer or string).
+    |
+    */
+    'otp' => [
+        'length' => 6,            // Length of the OTP
+        'max_tries' => 3,         // Maximum allowed attempts
+        'ttl' => 10,              // Time-to-live for the OTP (in minutes)
+        'type' => 'integer',      // Type of OTP, can be 'integer' or 'string'
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Middleware Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Specify which middleware should be applied to the authentication routes.
+    | The 'api' middleware ensures API-based routes are secured and 'auth:sanctum'
+    | applies Sanctum authentication to protect the routes.
+    |
+    */
+    'middleware' => [
+        'api',                      // API middleware
+        'auth:sanctum',             // Sanctum authentication middleware
+        // 'DispatchRestApiKitStartingEvent::class',  // Optionally enable event dispatching
+        // 'AuthorizeRestApiKit::class',             // Optionally authorize API requests
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Personal Token Provider
+    |--------------------------------------------------------------------------
+    |
+    | This configuration specifies the package to use for generating personal
+    | tokens for authentication. Supported options are "sanctum" or "passport".
+    |
+    */
+    'provider' => 'passport',      // Can also be 'sanctum' if you're using Sanctum
+
+    'login_with' => 'email', // Can be 'email' or 'phone_number' 
+    //add custom registration fields
+    'custom_registration_fields' => [
+        // 'phone_number' => 'required|string|min:10|max:15|unique:users',
+        // 'role' => 'required|string|in:user,admin', 
+    ],
+    /*
+    |--------------------------------------------------------------------------
+    | Frontend Application URLs
+    |--------------------------------------------------------------------------
+    |
+    | Set the frontend app URL for things like password reset links and user
+    | verification links. This URL is used to generate links that will direct
+    | users to the frontend of the application.
+    |
+    */
+    'frontend_app_url' => env('FRONTEND_APP_URL', env('APP_URL')),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Password Reset URL
+    |--------------------------------------------------------------------------
+    |
+    | Define the URL to use for password reset links. It includes placeholders
+    | for the token and email, which will be replaced when generating the link.
+    |
+    */
+    'password_reset_url' => env('FRONTEND_APP_URL').'/password/reset?token={token}&email={email}',
+
+    /*
+    |--------------------------------------------------------------------------
+    | User Verification URL
+    |--------------------------------------------------------------------------
+    |
+    | Set the URL for user verification links. The placeholders will be replaced
+    | by the user's ID and hashed email address.
+    |
+    */
+    'user_verify_url' => env('FRONTEND_APP_URL').'/verify/{id}/{emailHash}',
+],
+
 
     'APP_DEBUG' => true,
     /*
@@ -94,13 +160,7 @@ return [
     |
     */
 
-    'middleware' => [
-        'api',
-        'auth:sanctum',
-        // DispatchRestApiKitStartingEvent::class,
-        // AuthorizeRestApiKit::class,
-    ],
-
+ 
     /*
     |--------------------------------------------------------------------------
     | RestApiKit Logs
@@ -149,6 +209,7 @@ return [
     ],
 
     'cache' => [
+
         /*
         | Specify the cache configuration for the resources policies.
         | When enabled, methods from the policy will be cached for the active user.

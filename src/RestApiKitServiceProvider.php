@@ -9,7 +9,7 @@ use Mhasnainjafri\RestApiKit\Commands\ClearCacheCommand;
 use Mhasnainjafri\RestApiKit\Commands\CreatePolicyCommand;
 use Mhasnainjafri\RestApiKit\Commands\SetupAuthCommand;
 use Mhasnainjafri\RestApiKit\Helpers\RouteRegistrar;
-use Mhasnainjafri\RestApiKit\Http\Controllers\AuthController;
+use Mhasnainjafri\RestApiKit\Http\Controllers\Auth\AuthController;
 
 class RestApiKitServiceProvider extends ServiceProvider
 {
@@ -19,26 +19,16 @@ class RestApiKitServiceProvider extends ServiceProvider
     public function boot()
     {
         $this->defineGate();
+        $this->mergeConfigFrom(
+            __DIR__.'/../config/restify.php', // Path to your package's config file
+            'restify' // The name under which the config will be accessed
+        );
+       
 
-        Route::macro('restifyAuth', function (array $actions = ['login', 'register', 'forgotPassword', 'resetPassword', 'verifyEmail', 'sendOtp', 'changePassword', 'verifyOtp']) {
-            $routes = [
-                'login' => ['POST', 'login', 'login'],
-                'register' => ['POST', 'register', 'register'],
-                'forgotPassword' => ['POST', 'restify/forgotPassword', 'forgotPassword'],
-                'resetPassword' => ['POST', 'restify/resetPassword', 'resetPassword'],
-                'verifyEmail' => ['POST', 'restify/verify/{id}/{emailHash}', 'verifyEmail'],
-                'sendOtp' => ['POST', 'restify/verify/{id}/{emailHash}', 'sendOtp'],
-                'verifyOtp' => ['POST', 'restify/verify/{id}/{emailHash}', 'verifyOtp'],
-                'changePassword' => ['POST', 'restify/verify/{id}/{emailHash}', 'changePassword'],
-            ];
-
-            foreach ($actions as $action) {
-                if (isset($routes[$action])) {
-                    Route::match([$routes[$action][0]], $routes[$action][1], [AuthController::class, $routes[$action][2]]);
-                }
-            }
+        Route::macro('restifyAuth', function ($actions = ['login', 'register', 'forgotPassword', 'resetPassword', 'verifyEmail', 'sendOtp', 'changePassword', 'verifyOtp']) {
+            // Assuming that RouteRegistrar::registerAuthRoutes is a method that registers routes
+            RouteRegistrar::registerAuthRoutesfunction($actions);
         });
-
         /*
          * Optional methods to load your package assets
          */
@@ -49,12 +39,16 @@ class RestApiKitServiceProvider extends ServiceProvider
 
         if ($this->app->runningInConsole()) {
             $this->publishes([
-                __DIR__.'/../config/config.php' => config_path('restapikit.php'),
+                __DIR__.'/../config/restify.php' => config_path('restify.php'),
             ], 'config');
             $this->publishes([
                 __DIR__.'/../stubs' => base_path('stubs/restapikit'),
             ], 'restapikit-stubs');
 
+            // Publishing the controller .
+            $this->publishes([
+                __DIR__.'/Http/Controllers/Auth' => base_path('app/Http/Controllers/RestApi/Auth'),
+            ], 'restify-AuthControllers');
             // Publishing the views.
             /*$this->publishes([
                 __DIR__.'/../resources/views' => resource_path('views/vendor/restapikit'),
@@ -78,7 +72,7 @@ class RestApiKitServiceProvider extends ServiceProvider
 
             ]);
         }
-        RouteRegistrar::registerAuthRoutes();
+        
 
     }
 

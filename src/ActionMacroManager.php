@@ -12,7 +12,7 @@ class ActionMacroManager
 
     public function execute($name, ...$parameters)
     {
-        if (! self::hasMacro($name)) {
+        if (! static::hasMacro($name)) {
             throw new \BadMethodCallException("Macro {$name} is not defined.");
         }
 
