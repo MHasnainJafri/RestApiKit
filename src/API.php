@@ -46,6 +46,10 @@ class API
 
         return $responseBuilder->toResponse();
     }
+    public static function success($data = null, string|array|null $message = null, int $status = 200): JsonResponse
+    {
+        return API::response($data, $message, $status);
+    }
 
     public static function exception($exception, $message, $status): JsonResponse
     {
