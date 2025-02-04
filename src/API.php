@@ -3,6 +3,7 @@
 namespace Mhasnainjafri\RestApiKit;
 
 use Illuminate\Support\Facades\Cache;
+use Mhasnainjafri\RestApiKit\API\APIHelper;
 use Mhasnainjafri\RestApiKit\Helpers\FileUploader;
 use Mhasnainjafri\RestApiKit\Http\Responses\ResponseBuilder;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -67,7 +68,29 @@ class API
 
     }
 
+    /**
+     * Return an error response.
+     *
+     * @param array $errors The error message to be returned.
+     * @param int $status The HTTP status code for the response, default is 400.
+     * @return \Illuminate\Http\JsonResponse A JSON response containing success status and error message.
+     */
     public static function errors(array $errors, int $status = 400): JsonResponse
+    {
+        return response()->json([
+            'success' => false,
+            'errors' => $errors,
+        ], $status);
+    }
+/**
+ * Return an error response.
+ *
+ * @param string $errors The error message to be returned.
+ * @param int $status The HTTP status code for the response, default is 400.
+ * @return \Illuminate\Http\JsonResponse A JSON response containing success status and error message.
+ */
+
+    public static function error(string $errors, int $status = 400): JsonResponse
     {
         return response()->json([
             'success' => false,
@@ -138,5 +161,24 @@ class API
             'message' => 'Validation failed',
             'errors' => self::UNPROCESSABLE_ENTITY,
         ], 422);
+    }
+      /**
+     * Paginated response.
+     *
+     * @param \Illuminate\Pagination\LengthAwarePaginator $paginator
+     * @param string $msg
+     * @param int $statusCode
+     * @return JsonResponse
+     */
+    public static function paginated($paginator, string $msg = 'Success', int $statusCode = self::SUCCESS): JsonResponse
+    {
+        $resource = [
+            'items' => $paginator->items(),
+            'current_page' => $paginator->currentPage(),
+            'last_page' => $paginator->lastPage(),
+            'per_page' => $paginator->perPage(),
+            'total' => $paginator->total(),
+        ];
+        return APIHelper::formatResponse($resource, $msg, $statusCode);
     }
 }
