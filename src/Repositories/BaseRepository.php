@@ -6,9 +6,9 @@ use Illuminate\Database\Eloquent\{Builder, Model, SoftDeletes};
 use Illuminate\Support\{Facades\Cache, Facades\Gate, Str};
 use Illuminate\Http\{Request, Resources\Json\JsonResource};
 use Illuminate\Validation\ValidationException;
-use App\Exceptions\RepositoryException;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Mhasnainjafri\RestApiKit\API;
+use Mhasnainjafri\RestApiKit\Exceptions\RepositoryException;
 use ReflectionClass;
 
 abstract class BaseRepository
@@ -383,8 +383,11 @@ protected static function authorize(string $ability, mixed $arguments = null): v
 
     Gate::authorize($ability, $arguments);
 }
-protected static function generateCacheKey(Request $request, string $tag): string
+protected static function generateCacheKey(Request $request, string $tag=null): string|null
 {
+    if(!$tag){
+        return null;
+    }
     // Combine all query parameters into a sorted array for consistency
     $queryParams = $request->query();
     ksort($queryParams); // Sort parameters alphabetically to ensure consistent ordering

@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\File;
 use Illuminate\Http\Request;
+use Mhasnainjafri\RestApiKit\Exceptions\CustomHandler;
 use Mhasnainjafri\RestApiKit\Repositories\BaseRepository;
 use ReflectionClass;
 use Str;
@@ -22,7 +23,7 @@ class RestApiKitRouteProvider extends ServiceProvider
 {
     $this->app->bind(
         \Illuminate\Contracts\Debug\ExceptionHandler::class,
-        \App\Exceptions\CustomHandler::class
+       CustomHandler::class
     );
 }
 
