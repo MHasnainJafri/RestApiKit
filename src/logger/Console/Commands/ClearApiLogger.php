@@ -1,6 +1,6 @@
 <?php
 
-namespace Mhasnainjafri\RestApiKit\logger\Commands;
+namespace Mhasnainjafri\RestApiKit\logger\Console\Commands;
 
 use Illuminate\Console\Command;
 use Mhasnainjafri\RestApiKit\logger\Contracts\ApiLoggerInterface;

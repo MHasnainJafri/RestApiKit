@@ -7,17 +7,24 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Mhasnainjafri\RestApiKit\Commands\ClearCacheCommand;
 use Mhasnainjafri\RestApiKit\Commands\CreatePolicyCommand;
+use Mhasnainjafri\RestApiKit\Commands\GeneratePostmanCollection;
+use Mhasnainjafri\RestApiKit\Commands\MakeRepository;
 use Mhasnainjafri\RestApiKit\Commands\SetupAuthCommand;
 use Mhasnainjafri\RestApiKit\Helpers\RouteRegistrar;
 use Mhasnainjafri\RestApiKit\Http\Controllers\Auth\AuthController;
+use Mhasnainjafri\RestApiKit\logger\Console\Commands\ClearApiLogger;
+use Mhasnainjafri\RestApiKit\Repositories\BaseRepository;
 
 class RestApiKitServiceProvider extends ServiceProvider
 {
+    
     /**
      * Bootstrap the application services.
      */
     public function boot()
     {
+        BaseRepository::boot();
+
         $this->defineGate();
         $this->mergeConfigFrom(
             __DIR__.'/../config/restify.php', // Path to your package's config file
@@ -69,6 +76,10 @@ class RestApiKitServiceProvider extends ServiceProvider
                 SetupAuthCommand::class,
                 ClearCacheCommand::class,
                 CreatePolicyCommand::class,
+                MakeRepository::class,
+                GeneratePostmanCollection::class,
+                ClearApiLogger::class
+
 
             ]);
         }

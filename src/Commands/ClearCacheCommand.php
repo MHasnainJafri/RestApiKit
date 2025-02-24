@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Cache;
 
 class ClearCacheCommand extends Command
 {
-    protected $signature = 'restify:clear-cache {key? : The cache key to clear}';
+    protected $signature = 'rest:clear-cache {key? : The cache key to clear}';
 
     protected $description = 'Clear cache for a specific key or all keys.';
 

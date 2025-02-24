@@ -50,7 +50,8 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Mhasnainjafri\\RestApiKit\\RestApiKitServiceProvider"
+                "Mhasnainjafri\\RestApiKit\\RestApiKitServiceProvider",
+                "Mhasnainjafri\\RestApiKit\\RestApiKitRouteProvider"
             ],
             "aliases": {
                 "RestApiKit": "Mhasnainjafri\\RestApiKit\\RestApiKitFacade"

@@ -7,7 +7,7 @@ use Illuminate\Support\Str;
 
 class CreatePolicyCommand extends Command
 {
-    protected $signature = 'restify:policy {name} {--model=}';
+    protected $signature = 'rest:policy {name} {--model=}';
 
     protected $description = 'Create a new policy with RestApiKit scaffold';
 

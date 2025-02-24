@@ -1,0 +1,27 @@
+<?php
+
+namespace App\Repositories;
+
+use App\Models\{{model}};
+use {{resourceNamespace}}{{resource}};
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Request;
+use Mhasnainjafri\RestApiKit\Repositories\BaseRepository;
+
+
+class {{model}}Repository extends BaseRepository
+{
+    protected static string $model = {{model}}::class;
+    protected static string $resourceClass = {{resource}}::class;
+    protected static array $searchable = {{searchable}};
+    protected static array $sortable = {{sortable}};
+    protected static array $defaultRelations = {{relations}};
+    protected static array $allowedRelations = {{relations}};
+    protected static int $defaultPerPage = {{perPage}};
+    protected static string|null $cacheTag = {{cacheTag}};
+
+    public static function validationRules(string $operation): array
+    {
+        return $operation === 'store' ? {{storeValidationRules}} : {{updateValidationRules}};
+    }
+}

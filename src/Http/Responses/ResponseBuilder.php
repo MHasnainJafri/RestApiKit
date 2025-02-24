@@ -29,7 +29,7 @@ class ResponseBuilder
     public function data($data): self
     {
         if ($data instanceof \Illuminate\Pagination\LengthAwarePaginator) {
-            $this->paginate($data);
+            $this->paginate($data,"items");
         } else {
             $this->data = $data;
         }
