@@ -12,7 +12,6 @@ use Mhasnainjafri\RestApiKit\Commands\MakeRepository;
 use Mhasnainjafri\RestApiKit\Commands\SetupAuthCommand;
 use Mhasnainjafri\RestApiKit\Helpers\RouteRegistrar;
 use Mhasnainjafri\RestApiKit\Http\Controllers\Auth\AuthController;
-use Mhasnainjafri\RestApiKit\logger\Console\Commands\ClearApiLogger;
 use Mhasnainjafri\RestApiKit\Repositories\BaseRepository;
 
 class RestApiKitServiceProvider extends ServiceProvider
@@ -78,9 +77,6 @@ class RestApiKitServiceProvider extends ServiceProvider
                 CreatePolicyCommand::class,
                 MakeRepository::class,
                 GeneratePostmanCollection::class,
-                ClearApiLogger::class
-
-
             ]);
         }
         

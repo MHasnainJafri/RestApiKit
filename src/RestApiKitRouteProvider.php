@@ -29,8 +29,8 @@ class RestApiKitRouteProvider extends ServiceProvider
 
     protected function registerRoutes()
     {
-        Route::prefix('api')
-            // ->middleware('api')
+        Route::prefix(config('restify.api_prefix', 'api'))
+           ->middleware(config('restify.middleware', ['api']))
             ->group(function () {
                 $this->registerCrudRoutes();
                 $this->registerCustomRoutes();
@@ -83,8 +83,11 @@ class RestApiKitRouteProvider extends ServiceProvider
 
     protected function getRouteName(string $repositoryClass): string
     {
-        return Str::kebab(str_replace('Repository', '', class_basename($repositoryClass)));
+        return  config('restify.api_base').'/'.Str::kebab(str_replace('Repository', '', class_basename($repositoryClass)));
+    
+        
     }
+
 
     protected function supportsSoftDeletes(string $repositoryClass): bool
     {

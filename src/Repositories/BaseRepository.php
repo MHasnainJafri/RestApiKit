@@ -45,7 +45,7 @@ abstract class BaseRepository
     // Core CRUD Operations
     public static function index(Request $request)
     {
-        $query = static::getModelInstance()->query();
+        $query = static::getModelInstance()->query()->with(static::$defaultRelations);
         $query = static::beforeIndex($query, $request);
         $query = static::applyCommonConditions($query, $request);
         $query = static::afterIndex($query, $request);
@@ -224,6 +224,7 @@ abstract class BaseRepository
 
     protected static function applyRelations(Builder $query, Request $request): Builder
     {
+       
         $requestedRelations = array_intersect(
             explode(',', $request->input('with')),
             static::$allowedRelations
@@ -319,9 +320,9 @@ abstract class BaseRepository
     }
 
     // Check if the original data is paginated
-    $originalData = $data->resource ?? null;
+    // $originalData = $data->resource ?? null;
 
-    if ($originalData instanceof LengthAwarePaginator) {
+    if ($data instanceof LengthAwarePaginator) {
         return API::paginated($data, $message, $code);
     }
 

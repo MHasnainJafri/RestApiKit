@@ -6,7 +6,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Mhasnainjafri\RestApiKit\logger\FileLogger;
 
 class APIHelper
 {
@@ -34,13 +33,6 @@ class APIHelper
 
     public static function saveLogs(Request $request, Response|JsonResponse|RedirectResponse $response)
     {
-        if (config('restify.logger')) {
-            try {
-                $fileLogger = new FileLogger;
-                $fileLogger->saveLogs($request, $response);
-            } catch (\Exception $e) {
-                \Log::error($e->getMessage());
-            }
-        }
+      
     }
 }
