@@ -406,8 +406,8 @@ return "Hello, {$name}!";
 
 ## **Todo list**
 
-1. CRUD generator
-2. Logger
+
+1. Logger
 
 
 
