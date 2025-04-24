@@ -29,7 +29,7 @@ class RestApiKitRouteProvider extends ServiceProvider
 
     protected function registerRoutes()
     {
-        Route::prefix(config('restify.api_prefix', 'api'))
+        Route::prefix('api/'.config('restify.api_prefix', 'api'))
            ->middleware(config('restify.middleware', ['api']))
             ->group(function () {
                 $this->registerCrudRoutes();
@@ -75,9 +75,10 @@ class RestApiKitRouteProvider extends ServiceProvider
         $repoPath = app_path('Repositories');
         if (!File::exists($repoPath)) return [];
 
-        return collect(File::files($repoPath))
+        return  collect(File::files($repoPath))
             ->map(fn ($file) => 'App\\Repositories\\' . pathinfo($file, PATHINFO_FILENAME))
-            ->filter(fn ($class) => class_exists($class) && is_subclass_of($class, BaseRepository::class))
+            ->filter(fn ($class) => class_exists($class)
+            && (is_subclass_of($class, BaseRepository::class) || is_subclass_of($class, 'App\\Repositories\\BaseRepository')))
             ->toArray();
     }
 

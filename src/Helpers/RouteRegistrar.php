@@ -9,14 +9,14 @@ class RouteRegistrar
     public static function registerAuthRoutesfunction(array $actions = ['login', 'register', 'forgotPassword', 'resetPassword', 'verifyEmail', 'sendOtp', 'changePassword', 'verifyOtp'])
     {
         $routes = [
-            'login' => ['POST', 'restify/login', 'login'],
-            'register' => ['POST', 'restify/register', 'register'],
-            'forgotPassword' => ['POST', 'restify/forgotPassword', 'forgotPassword'],
-            'resetPassword' => ['POST', 'restify/resetPassword', 'resetPassword'],
-            'verifyEmail' => ['POST', 'restify/verify/{id}/{emailHash}', 'verifyEmail'],
-            'sendOtp' => ['POST', 'restify/sendOtp', 'sendOtp'],
-            'verifyOtp' => ['POST', 'restify/verifyOtp', 'verifyOtp'],
-            'changePassword' => ['POST', 'restify/changePassword', 'changePassword'],
+            'login' => ['POST', 'RestApiKit/login', 'login'],
+            'register' => ['POST', 'RestApiKit/register', 'register'],
+            'forgotPassword' => ['POST', 'RestApiKit/forgotPassword', 'forgotPassword'],
+            'resetPassword' => ['POST', 'RestApiKit/resetPassword', 'resetPassword'],
+            'verifyEmail' => ['POST', 'RestApiKit/verify/{id}/{emailHash}', 'verifyEmail'],
+            'sendOtp' => ['POST', 'RestApiKit/sendOtp', 'sendOtp'],
+            'verifyOtp' => ['POST', 'RestApiKit/verifyOtp', 'verifyOtp'],
+            'changePassword' => ['POST', 'RestApiKit/changePassword', 'changePassword'],
         ];
         foreach ($actions as $action) {
             if (isset($routes[$action])) {
@@ -29,7 +29,7 @@ class RouteRegistrar
 
                 Route::match(
                     [$routes[$action][0]],
-                    $routes[$action][1],
+                    config('restify.api_prefix').'/'.$routes[$action][1],
                     [$controller, $routes[$action][2]] // Pass class name string, not app($controller)
                 );
             }
